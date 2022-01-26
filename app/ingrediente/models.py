@@ -11,9 +11,9 @@ class Ingrediente(BaseModel):
 
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
 
-    nome = db.Column(db.String(70), nullable=False, unique=True)
-    quantidade = db.Column(db.Integer(15), nullable=False)
-    tipo = db.Column(db.string(30), nullable=False)
+    nome = db.Column(db.String(70), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    tipo = db.Column(db.String(30), nullable=False)
 
 
     def json(self):

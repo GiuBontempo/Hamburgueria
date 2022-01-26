@@ -13,7 +13,7 @@ class FuncionarioG(MethodView):
         senha = body.get("senha")
 
         if isinstance(nome, str) and isinstance(email, str) and isinstance(senha, str):
-            funcionario = Funcionario.query.filter_by(email=email)
+            funcionario = Funcionario.query.filter_by(email=email).first()
             if funcionario:
                 return {"code_status":"esse funcionário já existe"},400
             funcionario = Funcionario(nome=nome,email=email,senha=senha)
@@ -29,18 +29,23 @@ class FuncionarioID(MethodView):
 
     def patch(self,id):
         body = request.json
-        funcionario = Funcionario.query.get_or_404
+        funcionario = Funcionario.query.get_or_404(id)
 
         nome = body.get("nome", funcionario.nome)
         email = body.get("email", funcionario.email)
         senha = body.get("senha", funcionario.senha)
 
-        if isinstance(nome, str) and isinstance(cpf, str) and isinstance(email, str) and isinstance(senha, str):
+        if isinstance(nome, str) and isinstance(email, str) and isinstance(senha, str):
             funcionario.nome = nome
             funcionario.email = email
             funcionario.senha = senha
             return funcionario.json(),200
         return {"code_status":"dados inválidos"},400
+
+    def delete(self, id):
+        funcionario = Funcionario.query.get_or_404(id)
+        funcionario.delete(funcionario)
+        return {"code_status":"deletado"},200
 
 class IngredienteG_funcionario(MethodView):
     def get(self):
@@ -58,7 +63,7 @@ class IngredienteG_funcionario(MethodView):
         tipo = body.get("tipo")
 
         if isinstance(nome, str) and isinstance(quantidade, int) and isinstance(tipo, str):
-            ingrediente = Ingrediente.query.filter_by(nome=nome)
+            ingrediente = Ingrediente.query.filter_by(nome=nome).first()
             if ingrediente:
                 return {"code_status":"esse ingrediente já existe"},400
             ingrediente = Ingrediente(nome=nome,quantidade=quantidade,tipo=tipo)
@@ -87,6 +92,11 @@ class IngredienteID_funcionario(MethodView):
             return ingrediente.json(),200
         return {"code_status":"dados inválidos"},400
 
+    def delete(self, id):
+        ingrediente = Ingrediente.query.get_or_404(id)
+        ingrediente.delete(ingrediente)
+        return {"code_status":"deletado"},200
+
 class ProdutoG_funcionario(MethodView):
     def get(self):
         produtos = Produto.query.all()
@@ -104,7 +114,7 @@ class ProdutoG_funcionario(MethodView):
         tipo = body.get("tipo")
 
         if isinstance(nome, str) and isinstance(descricao, str) and isinstance(tipo, str) and isinstance(preco, int):
-            produto = Produto.query.filter_by(nome=nome)
+            produto = Produto.query.filter_by(nome=nome).first()
             if produto:
                 return {"code_status":"esse produto já existe"},400
             produto = Produto(nome=nome,descricao=descricao,preco=preco,tipo=tipo)
@@ -134,3 +144,8 @@ class ProdutoID_funcionario(MethodView):
             produto.update()
             return produto.json(),200
         return {"code_status":"dados inválidos"},400
+
+    def delete(self, id):
+        produto = Produto.query.get_or_404(id)
+        produto.delete(produto)
+        return {"code_status":"deletado"},200

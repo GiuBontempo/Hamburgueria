@@ -8,7 +8,7 @@ class Funcionario(BaseModel):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
 
     nome = db.Column(db.String(70))
-    email = db.Column(db.String(70), nullable = False, unique = True)
+    email = db.Column(db.String(70), nullable = False)
     senha = db.Column(db.String(70), nullable = False)
 
 

@@ -19,7 +19,7 @@ class Cliente(BaseModel):
     senha = db.Column(db.String(70), nullable = False)
 
     pedido = db.relationship("Pedido", backref="cliente", uselist = False)
-    pedido_id = db.Column(db.Integer, db.ForeignKey("cliente.id", unique = True))
+    pedido_id = db.Column(db.Integer, db.ForeignKey("cliente.id"))
     cupons = db.relationship("Cupom", secondary = cliente_cupom, backref = "clientes")
 
     def json(self):

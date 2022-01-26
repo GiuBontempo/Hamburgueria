@@ -14,13 +14,20 @@ class ClienteG(MethodView):
         senha = body.get("senha")
 
         if isinstance(nome, str) and isinstance(cpf, str) and isinstance(email, str) and isinstance(senha, str):
-            cliente = Cliente.query.filter_by(email=email) and Cliente.query.filter_by(cpf=cpf)
+            cliente = Cliente.query.filter_by(email=email).first() and Cliente.query.filter_by(cpf=cpf).first()
             if cliente:
                 return {"code_status":"esse cliente já existe"},400
             cliente = Cliente(nome=nome,cpf=cpf,email=email,senha=senha)
             cliente.save()
             return cliente.json(),200
         return {"code_status":"dados inválidos"},400
+
+    def get(self):
+        clientes = Cliente.query.all()
+        body = {}
+        for cliente in clientes:
+            body[f"{cliente.id}"] = cliente.json()
+        return body
 
 
 class ClienteID(MethodView):
@@ -30,7 +37,7 @@ class ClienteID(MethodView):
 
     def patch(self,id):
         body = request.json
-        cliente = Cliente.query.get_or_404
+        cliente = Cliente.query.get_or_404(id)
 
         nome = body.get("nome", cliente.nome)
         cpf = body.get("cpf", cliente.cpf)
@@ -48,7 +55,7 @@ class ClienteID(MethodView):
         return {"code_status":"dados inválidos"},400
 
     def delete(self, id):
-        cliente = Cliente.query.get_or_404
+        cliente = Cliente.query.get_or_404(id)
         cliente.delete(cliente)
         return {"code_status":"deletado"},200
 

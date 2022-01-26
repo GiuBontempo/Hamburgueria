@@ -11,10 +11,10 @@ class Produto(BaseModel):
 
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
 
-    nome = db.Column(db.String(70), nullable=False, unique=True)
+    nome = db.Column(db.String(70), nullable=False)
     descricao = db.Column(db.String(1000))
     preco = db.Column(db.Float(15), nullable=False)
-    tipo = db.Column(db.string(30), nullable=False)
+    tipo = db.Column(db.String(30), nullable=False)
 
 
     def json(self):

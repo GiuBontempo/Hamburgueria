@@ -14,7 +14,9 @@ class Cupom(BaseModel):
     valor = db.Column(db.Integer, nullable = False)
     valor_minimo_do_pedido = db.Column(db.Integer)
     valor_maximo = db.Column(db.Integer)
-    codigo = db.Column(db.String(70), nullable = False, unique = True)
+    codigo = db.Column(db.String(70), nullable = False)
+
+    pedidos = db.relationship("Pedido")
 
 
     def json(self):

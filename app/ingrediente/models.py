@@ -1,4 +1,8 @@
 from app.models import BaseModel, db
+from flask import Blueprint
+
+
+ingrediente_api = Blueprint("ingrediente_api", __name__)
 
 
 class Ingrediente(BaseModel):

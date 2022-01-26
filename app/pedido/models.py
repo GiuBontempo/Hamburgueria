@@ -1,4 +1,8 @@
 from app.models import BaseModel, db
+from flask import Blueprint
+
+
+pedido_api = Blueprint("pedido_api", __name__)
 
 
 pedido_produto = db.Table("pedido_produto",

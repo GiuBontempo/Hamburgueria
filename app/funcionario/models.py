@@ -9,12 +9,12 @@ class Funcionario(BaseModel):
 
     nome = db.Column(db.String(70))
     email = db.Column(db.String(70), nullable = False)
-    senha = db.Column(db.String(70), nullable = False)
+    senha_hash = db.Column(db.String(70), nullable = False)
 
 
     def json(self):
         return{
+            "id":self.id,
             "nome":self.nome,
             "email":self.email,
-            "senha":self.senha,
         }

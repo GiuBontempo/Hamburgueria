@@ -1,8 +1,10 @@
 from app.funcionario.models import Funcionario
-from app.ingrediente.models import Ingrediente
-from app.produto.models import Produto
-from flask import request, jsonify
+from flask import request
 from flask.views import MethodView
+from app.extensions import jwt
+import bcrypt
+from flask_jwt_extended import create_access_token, jwt_required
+
 
 class FuncionarioG(MethodView):
     def post(self):
@@ -16,13 +18,17 @@ class FuncionarioG(MethodView):
             funcionario = Funcionario.query.filter_by(email=email).first()
             if funcionario:
                 return {"code_status":"esse funcionário já existe"},400
-            funcionario = Funcionario(nome=nome,email=email,senha=senha)
+
+            senha_hash= bcrypt.hashpw(senha.encode(), bcrypt.gensalt())
+
+            funcionario = Funcionario(nome=nome,email=email,senha_hash=senha_hash)
             funcionario.save()
             return funcionario.json(),200
         return {"code_status":"dados inválidos"},400
 
 
 class FuncionarioID(MethodView):
+    decorators = [jwt_required()]
     def get(self,id):
         funcionario = Funcionario.query.get_or_404(id)
         return funcionario.json()
@@ -36,9 +42,12 @@ class FuncionarioID(MethodView):
         senha = body.get("senha", funcionario.senha)
 
         if isinstance(nome, str) and isinstance(email, str) and isinstance(senha, str):
+
+            senha_hash= bcrypt.hashpw(senha.encode(), bcrypt.gensalt())
+
             funcionario.nome = nome
             funcionario.email = email
-            funcionario.senha = senha
+            funcionario.senha_hash = senha_hash
             return funcionario.json(),200
         return {"code_status":"dados inválidos"},400
 
@@ -47,105 +56,19 @@ class FuncionarioID(MethodView):
         funcionario.delete(funcionario)
         return {"code_status":"deletado"},200
 
-class IngredienteG_funcionario(MethodView):
-    def get(self):
-        ingredientes = Ingrediente.query.all()
-        body = {}
-        for ingrediente in ingredientes:
-            body[f"{ingrediente.id}"] = ingrediente.json()
-        return body
 
+class FuncionarioLogin(MethodView):
     def post(self):
         body = request.json
 
-        nome = body.get("nome")
-        quantidade = body.get("quantidade")
-        tipo = body.get("tipo")
+        email = body.get('email')
+        senha = body.get('senha')
 
-        if isinstance(nome, str) and isinstance(quantidade, int) and isinstance(tipo, str):
-            ingrediente = Ingrediente.query.filter_by(nome=nome).first()
-            if ingrediente:
-                return {"code_status":"esse ingrediente já existe"},400
-            ingrediente = Ingrediente(nome=nome,quantidade=quantidade,tipo=tipo)
-            ingrediente.save()
-            return ingrediente.json(),200
-        return {"code_status":"dados inválidos"},400
+        funcionario=Funcionario.query.filter_by(email=email).first()
 
-class IngredienteID_funcionario(MethodView):
-    def get(self, id):
-        ingrediente = Ingrediente.query.get_or_404(id)
-        return ingrediente.json()
+        if not funcionario or not bcrypt.hashpw(senha.encode(), bcrypt.gensalt()):
+            return {'code_status':'usuario ou senha invalidos!'}, 400
 
-    def patch(self, id):
-        body = request.json
-        ingrediente = Ingrediente.query.get_or_404(id)
+        token = create_access_token(identity=funcionario.id)
 
-        nome = body.get("nome", ingrediente.nome)
-        quantidade = body.get("quantidade", ingrediente.quantidade)
-        tipo = body.get("tipo", ingrediente.produtos)
-
-        if isinstance(nome, str) and isinstance(quantidade, int) and isinstance(tipo, str):
-            ingrediente.nome = nome
-            ingrediente.quantidade = quantidade
-            ingrediente.tipo = tipo
-            ingrediente.update()
-            return ingrediente.json(),200
-        return {"code_status":"dados inválidos"},400
-
-    def delete(self, id):
-        ingrediente = Ingrediente.query.get_or_404(id)
-        ingrediente.delete(ingrediente)
-        return {"code_status":"deletado"},200
-
-class ProdutoG_funcionario(MethodView):
-    def get(self):
-        produtos = Produto.query.all()
-        body = {}
-        for produto in produtos:
-            body[f"{produto.id}"] = produto.json()
-        return body
-
-    def post(self):
-        body = request.json
-
-        nome = body.get("nome")
-        descricao = body.get("descricao")
-        preco = body.get("preco")
-        tipo = body.get("tipo")
-
-        if isinstance(nome, str) and isinstance(descricao, str) and isinstance(tipo, str) and isinstance(preco, int):
-            produto = Produto.query.filter_by(nome=nome).first()
-            if produto:
-                return {"code_status":"esse produto já existe"},400
-            produto = Produto(nome=nome,descricao=descricao,preco=preco,tipo=tipo)
-            produto.save()
-            return produto.json(),200
-        return {"code_status":"dados inválidos"},400
-
-class ProdutoID_funcionario(MethodView):
-    def get(self, id):
-        produto = Produto.query.get_or_404(id)
-        return produto.json()
-
-    def patch(self, id):
-        body = request.json
-        produto = Produto.query.get_or_404(id)
-
-        nome = body.get("nome", produto.nome)
-        descricao = body.get("descricao", produto.descricao)
-        preco = body.get("preco", produto.preco)
-        tipo = body.get("tipo", produto.tipo)
-
-        if isinstance(nome, str) and isinstance(descricao, str) and isinstance(tipo, str) and isinstance(preco, int):
-            produto.nome = nome
-            produto.descricao = descricao
-            produto.preco = preco
-            produto.tipo = tipo
-            produto.update()
-            return produto.json(),200
-        return {"code_status":"dados inválidos"},400
-
-    def delete(self, id):
-        produto = Produto.query.get_or_404(id)
-        produto.delete(produto)
-        return {"code_status":"deletado"},200
+        return {"token":token}, 200

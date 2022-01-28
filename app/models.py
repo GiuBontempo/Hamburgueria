@@ -5,8 +5,9 @@ class BaseModel(db.Model):
     __abstract__ = True
 
 
+    @staticmethod
     def delete(obj):
-        db.session.delete()
+        db.session.delete(obj)
         db.session.commit()
 
     def save(self):

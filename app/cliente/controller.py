@@ -1,8 +1,12 @@
+from cgitb import html
 from app.cliente.models import Cliente
-from app.pedido.models import Pedido
-from app.produto.models import Produto
-from flask import request, jsonify
+from flask import request, render_template
 from flask.views import MethodView
+from flask_mail import Message
+from app.extensions import mail, jwt
+import bcrypt
+from flask_jwt_extended import create_access_token, jwt_required
+
 
 class ClienteG(MethodView):
     def post(self):
@@ -17,8 +21,20 @@ class ClienteG(MethodView):
             cliente = Cliente.query.filter_by(email=email).first() and Cliente.query.filter_by(cpf=cpf).first()
             if cliente:
                 return {"code_status":"esse cliente já existe"},400
-            cliente = Cliente(nome=nome,cpf=cpf,email=email,senha=senha)
+                
+            senha_hash= bcrypt.hashpw(senha.encode(), bcrypt.gensalt())
+            cliente = Cliente(nome=nome,cpf=cpf,email=email,senha_hash=senha_hash)
             cliente.save()
+
+            msg = Message(
+                sender= 'giuliano.domiciano@poli.ufrj.br',
+                recipients= [email],
+                subject= "Bem vindo(a)!",
+                html= render_template('email.html', nome=nome)
+            )
+
+            mail.send(msg)
+
             return cliente.json(),200
         return {"code_status":"dados inválidos"},400
 
@@ -31,6 +47,7 @@ class ClienteG(MethodView):
 
 
 class ClienteID(MethodView):
+    decorators = [jwt_required()]
     def get(self,id):
         cliente = Cliente.query.get_or_404(id)
         return cliente.json()
@@ -46,11 +63,15 @@ class ClienteID(MethodView):
         cupons = body.get("cupons", cliente.cupons)
 
         if isinstance(nome, str) and isinstance(cpf, str) and isinstance(email, str) and isinstance(senha, str):
+            
+            senha_hash= bcrypt.hashpw(senha.encode(), bcrypt.gensalt())
+            
             cliente.nome = nome
             cliente.cpf = cpf
             cliente.email = email
-            cliente.senha = senha
+            cliente.senha_hash = senha_hash
             cliente.cupons = cupons
+            cliente.update()
             return cliente.json(),200
         return {"code_status":"dados inválidos"},400
 
@@ -60,27 +81,18 @@ class ClienteID(MethodView):
         return {"code_status":"deletado"},200
 
 
-class PedidoID_user(MethodView):
-    def get(self, id):
-        pedido = Pedido.query.get_or_404(id)
-        return pedido.json()
-
-    def patch(self, id):
+class ClienteLogin(MethodView):
+    def post(self):
         body = request.json
-        pedido = Pedido.query.get_or_404(id)
 
-        cupom = body.get("cupom", pedido.cupom)
-        produtos = body.get("produtos", pedido.produtos)
+        email = body.get('email')
+        senha = body.get('senha')
 
-        pedido.cupom = cupom
-        pedido.produtos = produtos
-        pedido.update()
-        return pedido.json(),200
+        cliente=Cliente.query.filter_by(email=email).first()
 
-class ProdutoG_user(MethodView):
-    def get(self):
-        produtos = Produto.query.all()
-        body = {}
-        for produto in produtos:
-            body[f"{produto.id}"] = produto.json()
-        return body
+        if not cliente or not bcrypt.hashpw(senha.encode(), bcrypt.gensalt()):
+            return {'code_status':'usuario ou senha invalidos!'}, 400
+
+        token = create_access_token(identity=cliente.id)
+
+        return {"token":token}, 200

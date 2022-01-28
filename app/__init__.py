@@ -1,12 +1,12 @@
 from flask import Flask
 from .config import Config
-from .extensions import db, migrate
+from .extensions import db, migrate, mail, jwt
 from app.cliente.routes import cliente_api
 from app.funcionario.routes import funcionario_api
-from app.cupom.models import cupom_api
-from app.ingrediente.models import ingrediente_api
-from app.pedido.models import pedido_api
-from app.produto.models import produto_api
+from app.cupom.routes import cupom_api
+from app.ingrediente.routes import ingrediente_api
+from app.pedido.routes import pedido_api
+from app.produto.routes import produto_api
 
 def create_app():
 
@@ -16,6 +16,8 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app,db)
+    mail.init_app(app)
+    jwt.init_app(app)
 
     app.register_blueprint(cliente_api)
     app.register_blueprint(funcionario_api)

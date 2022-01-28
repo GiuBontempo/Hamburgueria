@@ -2,9 +2,6 @@ from app.models import BaseModel, db
 from flask import Blueprint
 
 
-produto_api = Blueprint("produto_api", __name__)
-
-
 class Produto(BaseModel):
 
     __tablename__ = "produto"

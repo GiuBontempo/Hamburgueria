@@ -16,7 +16,7 @@ class Cliente(BaseModel):
     nome = db.Column(db.String(70))
     cpf = db.Column(db.String(15), nullable = False, unique = True)
     email = db.Column(db.String(70), nullable = False, unique = True)
-    senha = db.Column(db.String(70), nullable = False)
+    senha_hash = db.Column(db.String(70), nullable = False)
 
     pedido = db.relationship("Pedido", backref="cliente", uselist = False)
     pedido_id = db.Column(db.Integer, db.ForeignKey("cliente.id"))
@@ -24,8 +24,9 @@ class Cliente(BaseModel):
 
     def json(self):
         return{
+            "id":self.id,
+
             "nome":self.nome,
             "cpf":self.cpf,
             "email":self.email,
-            "senha":self.senha,
         }

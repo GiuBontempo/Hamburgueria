@@ -1,5 +1,20 @@
+from app.sensive import Sensive as sensive
+
+
 class Config:
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///data.db"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JSON_SORT_KEYS = False
+    DEBUG = sensive.DEBUG
+    SQLALCHEMY_DATABASE_URI = sensive.SQLALCHEMY_DATABASE_URI
+    SQLALCHEMY_TRACK_MODIFICATIONS = sensive.SQLALCHEMY_TRACK_MODIFICATIONS
+    JSON_SORT_KEYS = sensive.JSON_SORT_KEYS
+
+    MAIL_SERVER= sensive.MAIL_SERVER
+    MAIL_PORT= sensive.MAIL_PORT
+    MAIL_USERNAME= sensive.MAIL_USERNAME
+
+    MAIL_USE_TLS= sensive.MAIL_USE_TLS
+    MAIL_USE_SSL= sensive.MAIL_USE_SSL
+
+
+    MAIL_PASSWORD = sensive.MAIL_PASSWORD
+
+    JWT_SECRET_KEY = sensive.JWT_SECRET_KEY
